@@ -534,8 +534,9 @@ const Component = {
 
   // URL do checkout para onde o cliente é enviado ao clicar em "Revelar código".
   CHECKOUT_URL: 'https://pay.hotmart.com/L67749361O?off=teyqer3w&checkoutMode=10',
-  APPEND_COUPON: false,          // true = anexa o código do prêmio como &coupon=CODE na URL do checkout
-  REDIRECT_DELAY: 15000,         // ms que o código fica visível antes de redirecionar (0 = imediato)
+  APPEND_COUPON: true,           // true = anexa o cupom ganho na URL do checkout (ex.: &offDiscount=TRI20)
+  COUPON_PARAM: 'offDiscount',   // nome do parâmetro do cupom na URL (Hotmart usa offDiscount)
+  REDIRECT_DELAY: 5000,          // ms que o código fica visível antes de redirecionar (0 = imediato)
 
   SPIN_DURATION: 4200,           // duração da animação de giro em ms
   EXTRA_TURNS: 6,                // voltas completas extras antes de parar
@@ -793,11 +794,13 @@ const Component = {
     }
   },
 
-  /* Monta a URL final do checkout, anexando o cupom se APPEND_COUPON = true */
+  /* Monta a URL final do checkout, anexando o cupom ganho se APPEND_COUPON = true.
+     Ex.: https://pay.hotmart.com/...&checkoutMode=10&offDiscount=TRI20
+     O cupom é sempre o do prêmio sorteado neste giro (this.currentPrize.code). */
   buildCheckoutUrl() {
     let url = this.CHECKOUT_URL;
     if (this.APPEND_COUPON && this.currentPrize && this.currentPrize.code) {
-      url += (url.includes('?') ? '&' : '?') + 'coupon=' + encodeURIComponent(this.currentPrize.code);
+      url += (url.includes('?') ? '&' : '?') + this.COUPON_PARAM + '=' + encodeURIComponent(this.currentPrize.code);
     }
     return url;
   },
