@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Roleta de Prêmios — T.R.I. 2.0</title>
+
+<!-- Google Fonts: Bricolage Grotesque (títulos), Source Sans 3 (corpo), DM Mono (números) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Mono:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     PALETA DA MARCA — Victor Darido / T.R.I. 2.0
+     "Precision Agriculture": verde-floresta + âmbar (dinheiro)
+     ============================================================ */
+  :root {
+    --forest-950: #021A0E; /* fundo escuro / texto sobre âmbar */
+    --forest-800: #064C34; /* fatias */
+    --forest-700: #03261A; /* fatia escura alternada */
+    --forest-600: #0E9F6E; /* ação / fatias */
+    --forest-400: #3DDBA0; /* acento sobre escuro */
+    --amber-400:  #E8B931; /* ponteiro, hub, CTA, prêmio raro */
+    --amber-500:  #D4A017; /* acento "dinheiro" */
+    --cream:      #FAF8F3; /* fundo do modal de resultado */
+
+    --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --font-body: 'Source Sans 3', system-ui, sans-serif;
+    --font-mono: 'DM Mono', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--cream);
+    background:
+      radial-gradient(ellipse 110% 75% at 50% -5%, #0a553a 0%, #04230f 48%, #010c06 100%);
+    background-color: #010c06;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: clamp(28px, 6vw, 56px) clamp(16px, 5vw, 40px) clamp(40px, 8vw, 72px);
+    overflow-x: hidden;
+  }
+
+  .app { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; }
+
+  /* -------------------- Cabeçalho -------------------- */
+  header {
+    text-align: center;
+    margin-bottom: clamp(18px, 4vw, 28px);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 2.6vw, 12px);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--amber-400);
+    margin-bottom: clamp(12px, 3vw, 18px);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(32px, 9vw, 50px);
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+  }
+  h1 .accent {
+    display: block;
+    color: var(--amber-400);
+  }
+  .subtitle {
+    margin-top: clamp(14px, 3.5vw, 20px);
+    font-size: clamp(14px, 3.5vw, 16px);
+    line-height: 1.5;
+    color: #b8cabf;
+    max-width: 40ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* -------------------- Pill de tentativas -------------------- */
+  .tries-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 2.8vw, 13px);
+    letter-spacing: 0.04em;
+    color: #cfe0d6;
+    background: rgba(3, 38, 26, 0.55);
+    border: 1px solid rgba(232, 185, 49, 0.35);
+    border-radius: 999px;
+    padding: 9px 18px;
+    margin-bottom: clamp(18px, 4.5vw, 28px);
+  }
+  .tries-pill strong { color: var(--amber-400); font-weight: 500; }
+
+  /* -------------------- Palco da roda -------------------- */
+  .stage {
+    position: relative;
+    width: min(86vw, 400px);
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+    filter: drop-shadow(0 24px 48px rgba(0,0,0,0.55));
+  }
+
+  /* Ponteiro âmbar fixo no topo, apontando para dentro da roda */
+  .pointer {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 26px solid var(--amber-400);
+    z-index: 6;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.45));
+  }
+
+  /* Anel externo dourado da roda */
+  .wheel-ring {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    padding: clamp(6px, 1.8vw, 10px);
+    background: linear-gradient(145deg, var(--amber-400), var(--amber-500) 60%, #b8860b);
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,0.2),
+      0 0 0 1px rgba(0,0,0,0.35);
+  }
+
+  /* A roda em si — o background (conic-gradient) é gerado via JS */
+  .wheel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    /* transição de giro definida em JS para reaproveitar a duração */
+    transform: rotate(0deg);
+  }
+
+  /* Camada dos rótulos posicionados radialmente */
+  .labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .label {
+    /* Cada rótulo vai do centro até a borda e é girado para o ângulo médio
+       da sua fatia (a base fica ancorada no centro da roda). */
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 50%;
+    width: 9em;
+    margin-left: -4.5em;
+    transform-origin: bottom center;
+    /* a rotação real é aplicada inline por JS */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: center;
+    padding-top: clamp(16px, 4.5vw, 26px);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(11px, 3vw, 16px);
+    line-height: 1.1;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* Hub central */
+  .hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(78px, 22vw, 108px);
+    height: clamp(78px, 22vw, 108px);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    background: radial-gradient(circle at 35% 28%, #0c4e36, #042a1c);
+    color: var(--amber-400);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(14px, 3.8vw, 19px);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    border: 3px solid var(--amber-400);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5), inset 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 5;
+  }
+
+  /* -------------------- Controles -------------------- */
+  .controls {
+    margin-top: clamp(24px, 5.5vw, 36px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .spin-btn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(15px, 3.8vw, 18px);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--forest-950);
+    background: linear-gradient(180deg, var(--amber-400), var(--amber-500));
+    border: none;
+    border-radius: 999px;
+    padding: clamp(15px, 3.8vw, 19px) clamp(40px, 12vw, 64px);
+    cursor: pointer;
+    width: min(100%, 320px);
+    box-shadow: 0 10px 24px rgba(212,160,23,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  .spin-btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .spin-btn:active:not(:disabled) { transform: translateY(0); }
+  .spin-btn:disabled {
+    cursor: not-allowed;
+    color: #9fb0a6;
+    background: linear-gradient(180deg, #5b6b62, #44514a);
+    box-shadow: none;
+  }
+
+  /* Card de status (aparece quando as tentativas acabam) */
+  .status-card {
+    width: 100%;
+    background: rgba(3, 38, 26, 0.55);
+    border: 1px solid rgba(61, 219, 160, 0.18);
+    border-radius: 16px;
+    padding: clamp(16px, 4vw, 22px) clamp(18px, 5vw, 26px);
+    text-align: center;
+    display: none;
+  }
+  .status-card.show { display: block; }
+  .status-card h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(16px, 4.2vw, 19px);
+    color: var(--amber-400);
+    margin-bottom: 8px;
+  }
+  .status-card p {
+    font-size: clamp(13px, 3.4vw, 15px);
+    line-height: 1.45;
+    color: #b8cabf;
+  }
+  .saved-code {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .saved-code-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8fb0a2;
+  }
+  .saved-code-value {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: clamp(20px, 6vw, 28px);
+    letter-spacing: 0.08em;
+    color: var(--amber-400);
+    background: rgba(232, 185, 49, 0.08);
+    border: 2px dashed var(--amber-500);
+    border-radius: 12px;
+    padding: 12px 22px;
+    user-select: all;
+  }
+
+  /* -------------------- Modal de resultado -------------------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 8, 5, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 50;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    width: min(92vw, 420px);
+    background: var(--cream);
+    color: var(--forest-950);
+    border-radius: 22px;
+    padding: clamp(26px, 6vw, 38px);
+    text-align: center;
+    transform: scale(0.92) translateY(12px);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+  }
+  .overlay.open .modal { transform: scale(1) translateY(0); }
+
+  .modal .prize-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--forest-600);
+    margin-bottom: 14px;
+  }
+  .modal h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(26px, 7vw, 38px);
+    line-height: 1.05;
+    color: var(--forest-800);
+  }
+  .modal .message {
+    margin-top: 12px;
+    font-size: clamp(15px, 3.8vw, 17px);
+    color: #4a5a51;
+    line-height: 1.45;
+  }
+
+  /* Bloco de e-mail */
+  .email-block { margin-top: 24px; display: none; }
+  .email-block label {
+    display: block;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--forest-800);
+  }
+  .email-block input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 16px;
+    padding: 14px 16px;
+    border: 2px solid #d9d2c4;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--forest-950);
+    transition: border-color 0.2s ease;
+  }
+  .email-block input:focus { outline: none; border-color: var(--forest-600); }
+  .email-block input.error { border-color: #c0392b; }
+  .email-error {
+    text-align: left;
+    color: #c0392b;
+    font-size: 13px;
+    margin-top: 6px;
+    min-height: 1.2em;
+  }
+
+  .reveal-btn, .close-btn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 28px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    transition: transform 0.12s ease, opacity 0.2s ease;
+  }
+  .reveal-btn {
+    color: var(--cream);
+    background: linear-gradient(180deg, var(--forest-600), var(--forest-800));
+  }
+  .reveal-btn:hover { transform: translateY(-2px); }
+
+  /* Bloco do código revelado */
+  .code-block { margin-top: 24px; display: none; }
+  .code-block.show { display: block; animation: pop 0.4s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .code-label { font-size: 13px; color: #4a5a51; margin-bottom: 8px; }
+  .code-value {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: clamp(24px, 7vw, 34px);
+    letter-spacing: 0.08em;
+    color: var(--forest-950);
+    background: repeating-linear-gradient(45deg, #fff, #fff 10px, #f3eddf 10px, #f3eddf 20px);
+    border: 2px dashed var(--amber-500);
+    border-radius: 14px;
+    padding: 16px;
+    user-select: all;
+  }
+  .copy-hint { font-size: 12px; color: #8a978e; margin-top: 8px; }
+  .close-btn {
+    color: var(--forest-800);
+    background: transparent;
+    border: 2px solid #d9d2c4;
+  }
+
+  footer {
+    margin-top: clamp(26px, 6vw, 44px);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #5e7167;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <div class="app">
+    <header>
+      <p class="eyebrow">Promoção T.R.I. 2.0 · Gire e ganhe</p>
+      <h1>Sua chance de levar <span class="accent">desconto de verdade</span></h1>
+      <p class="subtitle">Não é sorte cega. Essa é a sua oportunidade de receber o mapa para começar na pecuária do jeito certo e evitar erros que fazem muitos perderem dinheiro.</p>
+    </header>
+
+    <!-- Pill de tentativas restantes -->
+    <div class="tries-pill">Tentativas restantes <strong id="triesLeft">0</strong></div>
+
+    <!-- Palco da roda -->
+    <div class="stage">
+      <div class="pointer"></div>
+      <div class="wheel-ring">
+        <div class="wheel" id="wheel">
+          <div class="labels" id="labels"></div>
+        </div>
+      </div>
+      <div class="hub" id="hub"></div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <button class="spin-btn" id="spinBtn">Girar</button>
+      <div class="status-card" id="statusCard">
+        <h3 id="statusTitle">Suas tentativas acabaram</h3>
+        <p id="statusBody">Você já usou seus 3 giros neste dispositivo.</p>
+        <div class="saved-code" id="savedCode" hidden>
+          <span class="saved-code-label">Seu cupom</span>
+          <span class="saved-code-value" id="savedCodeValue"></span>
+        </div>
+      </div>
+    </div>
+
+    <footer>Victor Darido · T.R.I. 2.0</footer>
+  </div>
+
+  <!-- Modal de resultado -->
+  <div class="overlay" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <span class="prize-badge" id="prizeBadge">Você ganhou</span>
+      <h2 id="modalTitle"></h2>
+      <p class="message" id="modalMessage"></p>
+
+      <!-- Captura de e-mail (aparece quando REQUIRE_EMAIL = true) -->
+      <div class="email-block" id="emailBlock">
+        <label for="emailInput">Seu melhor e-mail para liberar o código</label>
+        <input type="email" id="emailInput" placeholder="voce@email.com" autocomplete="email" inputmode="email" />
+        <div class="email-error" id="emailError"></div>
+        <button class="reveal-btn" id="revealBtn">Revelar código</button>
+      </div>
+
+      <!-- Código do prêmio (revelado após e-mail) -->
+      <div class="code-block" id="codeBlock">
+        <p class="code-label">Use este código no checkout:</p>
+        <div class="code-value" id="codeValue"></div>
+        <p class="copy-hint" id="copyHint">Toque para selecionar e copiar.</p>
+      </div>
+
+      <button class="close-btn" id="closeBtn">Fechar</button>
+    </div>
+  </div>
+
+<script>
+/* ============================================================
+   ROLETA DE PRÊMIOS — T.R.I. 2.0
+   HTML + CSS + JS puro, sem framework e sem build.
+
+   Toda a configuração fica no objeto Component abaixo.
+   Personalize PRIZES, CENTER_LABEL, MAX_SPINS, etc.
+   ============================================================ */
+const Component = {
+
+  /* ----- PRÊMIOS -----------------------------------------------------------
+     Cada item:
+       label     -> texto exibido na fatia
+       code      -> código de desconto revelado no modal ('' = sem prêmio)
+       weight    -> peso/probabilidade RELATIVA (não precisa somar 100;
+                    um weight 30 é 30x mais provável que um weight 1)
+       color     -> cor de fundo da fatia
+       textColor -> cor do rótulo na fatia
+       message   -> mensagem exibida no modal de resultado
+     8 fatias, em ordem horária a partir do topo (sob o ponteiro).
+  ------------------------------------------------------------------------- */
+  PRIZES: [
+    { label: '10% OFF',   code: 'TRI10',    weight: 30, color: '#064C34', textColor: '#FAF8F3', message: 'Um bom começo. Todo desconto conta na safra.' },
+    { label: '15% OFF',   code: 'TRI15',    weight: 22, color: '#0E9F6E', textColor: '#021A0E', message: 'Mais economia no seu próximo plano.' },
+    { label: 'Não foi',   code: '',         weight: 25, color: '#03261A', textColor: '#9FB8AC', message: 'Não foi dessa vez. Respira e tenta de novo!' },
+    { label: '20% OFF',   code: 'TRI20',    weight: 12, color: '#0E9F6E', textColor: '#021A0E', message: 'Desconto cheio de respeito. Aproveite.' },
+    { label: '30% OFF',   code: 'TRI30',    weight: 5,  color: '#064C34', textColor: '#FAF8F3', message: 'Desconto cheio. Não deixe dinheiro na mesa.' },
+    { label: 'Brinde',    code: 'BRINDETRI',weight: 4,  color: '#03261A', textColor: '#3DDBA0', message: 'Você ganhou um brinde especial da T.R.I. 2.0.' },
+    { label: '50% OFF',   code: 'TRI50',    weight: 1,  color: '#D4A017', textColor: '#021A0E', message: 'Prêmio raro! Metade do preço é coisa séria.' },
+    { label: 'Promo dia', code: 'PROMODIA', weight: 1,  color: '#E8B931', textColor: '#021A0E', message: 'A promo do dia é sua. Aproveite agora.' },
+  ],
+
+  CENTER_LABEL: 'T.R.I. 2.0',    // texto/logo no hub central (\n quebra linha)
+  MAX_SPINS: 3,                  // tentativas permitidas por navegador
+  REQUIRE_EMAIL: true,           // exige e-mail antes de revelar o código
+  FORCE_INDEX: null,             // null = sorteio por peso; ou um índice 0-based para forçar
+  STORAGE_KEY: 'tri-roleta-spins', // chave do localStorage que guarda os giros usados
+  CODE_STORAGE_KEY: 'tri-roleta-code', // chave do localStorage que guarda o último cupom ganho
+
+  // URL do checkout para onde o cliente é enviado ao clicar em "Revelar código".
+  CHECKOUT_URL: 'https://pay.hotmart.com/L67749361O?off=teyqer3w&checkoutMode=10',
+  APPEND_COUPON: false,          // true = anexa o código do prêmio como &coupon=CODE na URL do checkout
+  REDIRECT_DELAY: 15000,         // ms que o código fica visível antes de redirecionar (0 = imediato)
+
+  SPIN_DURATION: 4200,           // duração da animação de giro em ms
+  EXTRA_TURNS: 6,                // voltas completas extras antes de parar
+
+  /* ----- Estado em tempo de execução ----- */
+  spinning: false,
+  currentRotation: 0,
+
+  /* ============================================================
+     INICIALIZAÇÃO
+     ============================================================ */
+  init() {
+    this.wheel    = document.getElementById('wheel');
+    this.labels   = document.getElementById('labels');
+    this.hub      = document.getElementById('hub');
+    this.spinBtn  = document.getElementById('spinBtn');
+    this.triesLeft = document.getElementById('triesLeft');
+    this.statusCard = document.getElementById('statusCard');
+    this.statusTitle = document.getElementById('statusTitle');
+    this.statusBody = document.getElementById('statusBody');
+    this.savedCode = document.getElementById('savedCode');
+    this.savedCodeValue = document.getElementById('savedCodeValue');
+    this.overlay  = document.getElementById('overlay');
+    this.prizeBadge   = document.getElementById('prizeBadge');
+    this.modalTitle   = document.getElementById('modalTitle');
+    this.modalMessage = document.getElementById('modalMessage');
+    this.emailBlock = document.getElementById('emailBlock');
+    this.emailInput = document.getElementById('emailInput');
+    this.emailError = document.getElementById('emailError');
+    this.revealBtn  = document.getElementById('revealBtn');
+    this.codeBlock  = document.getElementById('codeBlock');
+    this.codeValue  = document.getElementById('codeValue');
+    this.copyHint   = document.getElementById('copyHint');
+    this.closeBtn   = document.getElementById('closeBtn');
+
+    this.slices = this.PRIZES.length;
+    this.sliceAngle = 360 / this.slices;
+
+    this.buildWheel();
+    this.hub.innerHTML = this.CENTER_LABEL.replace(/\n/g, '<br>');
+
+    this.spinBtn.addEventListener('click', () => this.spin());
+    this.revealBtn.addEventListener('click', () => this.handleReveal());
+    this.closeBtn.addEventListener('click', () => this.closeModal());
+    this.emailInput.addEventListener('input', () => {
+      this.emailInput.classList.remove('error');
+      this.emailError.textContent = '';
+    });
+
+    this.refreshStatus();
+  },
+
+  /* ============================================================
+     CONSTRUÇÃO VISUAL DA RODA
+     ============================================================ */
+  buildWheel() {
+    // 1) Fundo da roda via conic-gradient: uma faixa de cor sólida por fatia
+    const stops = [];
+    this.PRIZES.forEach((prize, i) => {
+      const start = i * this.sliceAngle;
+      const end = (i + 1) * this.sliceAngle;
+      stops.push(`${prize.color} ${start}deg ${end}deg`);
+    });
+    this.wheel.style.background = `conic-gradient(${stops.join(', ')})`;
+
+    // 2) Rótulos posicionados radialmente no centro de cada fatia.
+    this.PRIZES.forEach((prize, i) => {
+      const mid = i * this.sliceAngle + this.sliceAngle / 2; // ângulo central da fatia
+      const el = document.createElement('div');
+      el.className = 'label';
+      el.textContent = prize.label;
+      el.style.color = prize.textColor;
+      el.style.transform = `rotate(${mid}deg)`;
+      this.labels.appendChild(el);
+    });
+  },
+
+  /* ============================================================
+     SORTEIO POR PESO
+     ============================================================ */
+  pickPrizeIndex() {
+    // Resultado forçado (útil para demos/QA)
+    if (this.FORCE_INDEX !== null && this.FORCE_INDEX >= 0 && this.FORCE_INDEX < this.slices) {
+      return this.FORCE_INDEX;
+    }
+    const total = this.PRIZES.reduce((sum, p) => sum + p.weight, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < this.PRIZES.length; i++) {
+      r -= this.PRIZES[i].weight;
+      if (r < 0) return i;
+    }
+    return this.PRIZES.length - 1; // fallback
+  },
+
+  /* ============================================================
+     LOCALSTORAGE — giros usados
+     ============================================================ */
+  getSpinsUsed() {
+    const v = parseInt(localStorage.getItem(this.STORAGE_KEY), 10);
+    return isNaN(v) ? 0 : v;
+  },
+  setSpinsUsed(n) { localStorage.setItem(this.STORAGE_KEY, String(n)); },
+  spinsLeft() { return Math.max(0, this.MAX_SPINS - this.getSpinsUsed()); },
+
+  // Último cupom ganho — persiste para reconhecer o cliente em retornos futuros
+  getLastCode() { return localStorage.getItem(this.CODE_STORAGE_KEY) || ''; },
+  saveLastCode(code) { if (code) localStorage.setItem(this.CODE_STORAGE_KEY, code); },
+
+  refreshStatus() {
+    const left = this.spinsLeft();
+    const lastCode = this.getLastCode();
+    this.triesLeft.textContent = left;
+
+    if (left <= 0) {
+      // Tentativas esgotadas
+      this.spinBtn.disabled = true;
+      this.spinBtn.textContent = 'Sem tentativas';
+      this.statusTitle.textContent = 'Suas tentativas acabaram';
+      if (lastCode) {
+        // Mesmo cliente reconhecido: mostra o último cupom que ele ganhou
+        this.statusBody.textContent = 'Reconhecemos este dispositivo. Use o último cupom que você ganhou — ele não expira por aqui:';
+        this.showSavedCode(lastCode);
+      } else {
+        this.statusBody.textContent = 'Você já usou seus 3 giros neste dispositivo.';
+        this.hideSavedCode();
+      }
+      this.statusCard.classList.add('show');
+    } else if (lastCode) {
+      // Cliente reconhecido com cupom guardado, mas ainda com tentativas
+      this.spinBtn.disabled = false;
+      this.spinBtn.textContent = 'Girar';
+      this.statusTitle.textContent = 'Bem-vindo de volta!';
+      this.statusBody.textContent = 'Você já tem um cupom guardado neste dispositivo:';
+      this.showSavedCode(lastCode);
+      this.statusCard.classList.add('show');
+    } else {
+      // Cliente novo, com tentativas
+      this.spinBtn.disabled = false;
+      this.spinBtn.textContent = 'Girar';
+      this.hideSavedCode();
+      this.statusCard.classList.remove('show');
+    }
+  },
+
+  showSavedCode(code) {
+    this.savedCodeValue.textContent = code;
+    this.savedCode.hidden = false;
+  },
+  hideSavedCode() {
+    this.savedCode.hidden = true;
+  },
+
+  /* ============================================================
+     GIRO
+     ============================================================ */
+  spin() {
+    if (this.spinning || this.spinsLeft() <= 0) return;
+    this.spinning = true;
+    this.spinBtn.disabled = true;
+
+    const index = this.pickPrizeIndex();
+
+    // Consome uma tentativa já no início do giro (persistente)
+    this.setSpinsUsed(this.getSpinsUsed() + 1);
+    this.triesLeft.textContent = this.spinsLeft();
+
+    // Ângulo central da fatia sorteada
+    const sliceMid = index * this.sliceAngle + this.sliceAngle / 2;
+    // O ponteiro está no topo (0deg). Alinha o centro da fatia ao topo.
+    const targetWithinTurn = (360 - sliceMid) % 360;
+
+    const currentMod = ((this.currentRotation % 360) + 360) % 360;
+    const delta = (this.EXTRA_TURNS * 360) + ((targetWithinTurn - currentMod + 360) % 360);
+    this.currentRotation += delta;
+
+    // Animação de desaceleração suave
+    this.wheel.style.transition = `transform ${this.SPIN_DURATION}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+    this.wheel.style.transform = `rotate(${this.currentRotation}deg)`;
+
+    const onEnd = () => {
+      this.wheel.removeEventListener('transitionend', onEnd);
+      this.spinning = false;
+      this.refreshStatus();
+      this.showResult(index);
+    };
+    this.wheel.addEventListener('transitionend', onEnd);
+  },
+
+  /* ============================================================
+     MODAL DE RESULTADO
+     ============================================================ */
+  showResult(index) {
+    const prize = this.PRIZES[index];
+    this.currentPrize = prize;
+    const isWin = !!prize.code;
+
+    this.modalTitle.textContent = prize.label;
+    this.modalMessage.textContent = prize.message;
+    this.codeValue.textContent = prize.code;
+
+    // Reseta estado do modal
+    this.codeBlock.classList.remove('show');
+    this.emailInput.value = '';
+    this.emailInput.classList.remove('error');
+    this.emailError.textContent = '';
+    if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+
+    if (!isWin) {
+      // Fatia sem prêmio ("Não foi"): só mensagem + fechar
+      this.prizeBadge.textContent = 'Quase!';
+      this.emailBlock.style.display = 'none';
+      // codeBlock permanece oculto (sem a classe .show)
+    } else {
+      this.prizeBadge.textContent = 'Você ganhou';
+      if (this.REQUIRE_EMAIL) {
+        // Mostra o bloco de e-mail; o código (codeBlock) só aparece
+        // depois que o e-mail for validado em handleReveal().
+        this.emailBlock.style.display = 'block';
+      } else {
+        // Sem exigência de e-mail: revela o código direto.
+        this.emailBlock.style.display = 'none';
+        this.codeBlock.classList.add('show');
+        this.saveLastCode(prize.code);
+      }
+    }
+
+    this.overlay.classList.add('open');
+    if (isWin && this.REQUIRE_EMAIL) setTimeout(() => this.emailInput.focus(), 350);
+  },
+
+  /* Valida e-mail, revela o código e redireciona para o checkout */
+  handleReveal() {
+    const email = this.emailInput.value.trim();
+    if (!this.isValidEmail(email)) {
+      this.emailInput.classList.add('error');
+      this.emailError.textContent = 'Digite um e-mail válido para continuar.';
+      this.emailInput.focus();
+      return;
+    }
+    // Aqui você poderia enviar o e-mail para seu backend/CRM.
+    // Ex.: fetch('/api/lead', { method:'POST', body: JSON.stringify({ email, code: this.currentPrize.code }) });
+
+    this.emailBlock.style.display = 'none';
+    this.codeBlock.classList.add('show');
+    this.copyHint.textContent = 'Anote seu código — redirecionando para o checkout...';
+
+    // Guarda o cupom recebido para reconhecer o cliente em retornos futuros
+    this.saveLastCode(this.currentPrize.code);
+
+    const url = this.buildCheckoutUrl();
+    if (this.REDIRECT_DELAY > 0) {
+      this.redirectTimer = setTimeout(() => { window.location.href = url; }, this.REDIRECT_DELAY);
+    } else {
+      window.location.href = url;
+    }
+  },
+
+  /* Monta a URL final do checkout, anexando o cupom se APPEND_COUPON = true */
+  buildCheckoutUrl() {
+    let url = this.CHECKOUT_URL;
+    if (this.APPEND_COUPON && this.currentPrize && this.currentPrize.code) {
+      url += (url.includes('?') ? '&' : '?') + 'coupon=' + encodeURIComponent(this.currentPrize.code);
+    }
+    return url;
+  },
+
+  isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  },
+
+  closeModal() {
+    if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+    this.overlay.classList.remove('open');
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => Component.init());
+</script>
+</body>
+</html>
