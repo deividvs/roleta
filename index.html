@@ -742,7 +742,8 @@ const Component = {
     this.emailInput.value = '';
     this.emailInput.classList.remove('error');
     this.emailError.textContent = '';
-    if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+    if (this.countdownTimer) { clearInterval(this.countdownTimer); this.countdownTimer = null; }
+    this.copyHint.textContent = 'Toque para selecionar e copiar.';
 
     if (!isWin) {
       // Fatia sem prêmio ("Não foi"): só mensagem + fechar
@@ -781,14 +782,25 @@ const Component = {
 
     this.emailBlock.style.display = 'none';
     this.codeBlock.classList.add('show');
-    this.copyHint.textContent = 'Anote seu código — redirecionando para o checkout...';
 
     // Guarda o cupom recebido para reconhecer o cliente em retornos futuros
     this.saveLastCode(this.currentPrize.code);
 
     const url = this.buildCheckoutUrl();
     if (this.REDIRECT_DELAY > 0) {
-      this.redirectTimer = setTimeout(() => { window.location.href = url; }, this.REDIRECT_DELAY);
+      // Contagem regressiva exibida no modal antes de redirecionar
+      let secs = Math.ceil(this.REDIRECT_DELAY / 1000);
+      this.copyHint.textContent = `Anote seu código — redirecionando em ${secs}s...`;
+      this.countdownTimer = setInterval(() => {
+        secs--;
+        if (secs <= 0) {
+          clearInterval(this.countdownTimer);
+          this.countdownTimer = null;
+          window.location.href = url;
+        } else {
+          this.copyHint.textContent = `Anote seu código — redirecionando em ${secs}s...`;
+        }
+      }, 1000);
     } else {
       window.location.href = url;
     }
@@ -810,7 +822,7 @@ const Component = {
   },
 
   closeModal() {
-    if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+    if (this.countdownTimer) { clearInterval(this.countdownTimer); this.countdownTimer = null; }
     this.overlay.classList.remove('open');
   },
 };
