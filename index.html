@@ -261,32 +261,6 @@
     line-height: 1.45;
     color: #b8cabf;
   }
-  .saved-code {
-    margin-top: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  .saved-code-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #8fb0a2;
-  }
-  .saved-code-value {
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: clamp(20px, 6vw, 28px);
-    letter-spacing: 0.08em;
-    color: var(--amber-400);
-    background: rgba(232, 185, 49, 0.08);
-    border: 2px dashed var(--amber-500);
-    border-radius: 12px;
-    padding: 12px 22px;
-    user-select: all;
-  }
 
   /* -------------------- Modal de resultado -------------------- */
   .overlay {
@@ -455,12 +429,8 @@
     <div class="controls">
       <button class="spin-btn" id="spinBtn">Girar</button>
       <div class="status-card" id="statusCard">
-        <h3 id="statusTitle">Suas tentativas acabaram</h3>
-        <p id="statusBody">Você já usou seus 3 giros neste dispositivo.</p>
-        <div class="saved-code" id="savedCode" hidden>
-          <span class="saved-code-label">Seu cupom</span>
-          <span class="saved-code-value" id="savedCodeValue"></span>
-        </div>
+        <h3>Suas tentativas acabaram</h3>
+        <p>Você já usou seus 3 giros nesta sessão. Use o código que ganhou — ele não expira por aqui.</p>
       </div>
     </div>
 
@@ -529,13 +499,14 @@ const Component = {
   MAX_SPINS: 3,                  // tentativas permitidas por navegador
   REQUIRE_EMAIL: true,           // exige e-mail antes de revelar o código
   FORCE_INDEX: null,             // null = sorteio por peso; ou um índice 0-based para forçar
-  STORAGE_KEY: 'tri-roleta-spins', // chave do localStorage que guarda os giros usados
-  CODE_STORAGE_KEY: 'tri-roleta-code', // chave do localStorage que guarda o último cupom ganho
+  STORAGE_KEY: 'tri-roleta-spins', // chave do sessionStorage (tentativas valem só na sessão/aba atual)
 
   // URL do checkout para onde o cliente é enviado ao clicar em "Revelar código".
   CHECKOUT_URL: 'https://pay.hotmart.com/L67749361O?off=teyqer3w&checkoutMode=10',
   APPEND_COUPON: true,           // true = anexa o cupom ganho na URL do checkout (ex.: &offDiscount=TRI20)
   COUPON_PARAM: 'offDiscount',   // nome do parâmetro do cupom na URL (Hotmart usa offDiscount)
+  PREFILL_EMAIL: true,           // true = envia o e-mail digitado para pré-preencher o checkout
+  EMAIL_PARAM: 'email',          // nome do parâmetro de e-mail na URL (Hotmart usa email)
   REDIRECT_DELAY: 5000,          // ms que o código fica visível antes de redirecionar (0 = imediato)
 
   SPIN_DURATION: 4200,           // duração da animação de giro em ms
@@ -555,10 +526,6 @@ const Component = {
     this.spinBtn  = document.getElementById('spinBtn');
     this.triesLeft = document.getElementById('triesLeft');
     this.statusCard = document.getElementById('statusCard');
-    this.statusTitle = document.getElementById('statusTitle');
-    this.statusBody = document.getElementById('statusBody');
-    this.savedCode = document.getElementById('savedCode');
-    this.savedCodeValue = document.getElementById('savedCodeValue');
     this.overlay  = document.getElementById('overlay');
     this.prizeBadge   = document.getElementById('prizeBadge');
     this.modalTitle   = document.getElementById('modalTitle');
@@ -635,58 +602,24 @@ const Component = {
      LOCALSTORAGE — giros usados
      ============================================================ */
   getSpinsUsed() {
-    const v = parseInt(localStorage.getItem(this.STORAGE_KEY), 10);
+    const v = parseInt(sessionStorage.getItem(this.STORAGE_KEY), 10);
     return isNaN(v) ? 0 : v;
   },
-  setSpinsUsed(n) { localStorage.setItem(this.STORAGE_KEY, String(n)); },
+  setSpinsUsed(n) { sessionStorage.setItem(this.STORAGE_KEY, String(n)); },
   spinsLeft() { return Math.max(0, this.MAX_SPINS - this.getSpinsUsed()); },
-
-  // Último cupom ganho — persiste para reconhecer o cliente em retornos futuros
-  getLastCode() { return localStorage.getItem(this.CODE_STORAGE_KEY) || ''; },
-  saveLastCode(code) { if (code) localStorage.setItem(this.CODE_STORAGE_KEY, code); },
 
   refreshStatus() {
     const left = this.spinsLeft();
-    const lastCode = this.getLastCode();
     this.triesLeft.textContent = left;
-
     if (left <= 0) {
-      // Tentativas esgotadas
       this.spinBtn.disabled = true;
       this.spinBtn.textContent = 'Sem tentativas';
-      this.statusTitle.textContent = 'Suas tentativas acabaram';
-      if (lastCode) {
-        // Mesmo cliente reconhecido: mostra o último cupom que ele ganhou
-        this.statusBody.textContent = 'Reconhecemos este dispositivo. Use o último cupom que você ganhou — ele não expira por aqui:';
-        this.showSavedCode(lastCode);
-      } else {
-        this.statusBody.textContent = 'Você já usou seus 3 giros neste dispositivo.';
-        this.hideSavedCode();
-      }
-      this.statusCard.classList.add('show');
-    } else if (lastCode) {
-      // Cliente reconhecido com cupom guardado, mas ainda com tentativas
-      this.spinBtn.disabled = false;
-      this.spinBtn.textContent = 'Girar';
-      this.statusTitle.textContent = 'Bem-vindo de volta!';
-      this.statusBody.textContent = 'Você já tem um cupom guardado neste dispositivo:';
-      this.showSavedCode(lastCode);
       this.statusCard.classList.add('show');
     } else {
-      // Cliente novo, com tentativas
       this.spinBtn.disabled = false;
       this.spinBtn.textContent = 'Girar';
-      this.hideSavedCode();
       this.statusCard.classList.remove('show');
     }
-  },
-
-  showSavedCode(code) {
-    this.savedCodeValue.textContent = code;
-    this.savedCode.hidden = false;
-  },
-  hideSavedCode() {
-    this.savedCode.hidden = true;
   },
 
   /* ============================================================
@@ -760,7 +693,6 @@ const Component = {
         // Sem exigência de e-mail: revela o código direto.
         this.emailBlock.style.display = 'none';
         this.codeBlock.classList.add('show');
-        this.saveLastCode(prize.code);
       }
     }
 
@@ -783,10 +715,7 @@ const Component = {
     this.emailBlock.style.display = 'none';
     this.codeBlock.classList.add('show');
 
-    // Guarda o cupom recebido para reconhecer o cliente em retornos futuros
-    this.saveLastCode(this.currentPrize.code);
-
-    const url = this.buildCheckoutUrl();
+    const url = this.buildCheckoutUrl(email);
     if (this.REDIRECT_DELAY > 0) {
       // Contagem regressiva exibida no modal antes de redirecionar
       let secs = Math.ceil(this.REDIRECT_DELAY / 1000);
@@ -806,13 +735,21 @@ const Component = {
     }
   },
 
-  /* Monta a URL final do checkout, anexando o cupom ganho se APPEND_COUPON = true.
-     Ex.: https://pay.hotmart.com/...&checkoutMode=10&offDiscount=TRI20
+  /* Monta a URL final do checkout, anexando o cupom ganho (APPEND_COUPON) e o
+     e-mail digitado (PREFILL_EMAIL) para o checkout abrir pré-preenchido.
+     Ex.: https://pay.hotmart.com/...&checkoutMode=10&offDiscount=TRI20&email=voce%40email.com
      O cupom é sempre o do prêmio sorteado neste giro (this.currentPrize.code). */
-  buildCheckoutUrl() {
+  buildCheckoutUrl(email) {
     let url = this.CHECKOUT_URL;
+    const params = [];
     if (this.APPEND_COUPON && this.currentPrize && this.currentPrize.code) {
-      url += (url.includes('?') ? '&' : '?') + this.COUPON_PARAM + '=' + encodeURIComponent(this.currentPrize.code);
+      params.push(this.COUPON_PARAM + '=' + encodeURIComponent(this.currentPrize.code));
+    }
+    if (this.PREFILL_EMAIL && email) {
+      params.push(this.EMAIL_PARAM + '=' + encodeURIComponent(email));
+    }
+    if (params.length) {
+      url += (url.includes('?') ? '&' : '?') + params.join('&');
     }
     return url;
   },
