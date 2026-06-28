@@ -1,0 +1,30 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bk" x1="26" y1="26" x2="70" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC56B"/>
+      <stop offset="0.5" stop-color="#F7913E"/>
+      <stop offset="1" stop-color="#EF5F2E"/>
+    </linearGradient>
+    <linearGradient id="bkpg" x1="30" y1="30" x2="66" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF3DE"/>
+      <stop offset="1" stop-color="#FFD9A6"/>
+    </linearGradient>
+    <filter id="glowb" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#B6379B" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <g filter="url(#glowb)">
+    <!-- capa -->
+    <rect x="26" y="24" width="44" height="48" rx="5" fill="url(#bk)" stroke="#FFE3B0" stroke-width="2" stroke-opacity="0.6"/>
+    <!-- páginas -->
+    <rect x="33" y="30" width="33" height="36" rx="2" fill="url(#bkpg)"/>
+    <!-- linhas -->
+    <rect x="38" y="37" width="23" height="3" rx="1.5" fill="#F0883A" fill-opacity="0.7"/>
+    <rect x="38" y="45" width="23" height="3" rx="1.5" fill="#F0883A" fill-opacity="0.55"/>
+    <rect x="38" y="53" width="16" height="3" rx="1.5" fill="#F0883A" fill-opacity="0.45"/>
+    <!-- lombada -->
+    <rect x="26" y="24" width="7" height="48" rx="3" fill="#E8542A" fill-opacity="0.5"/>
+    <!-- brilho -->
+    <path d="M30 28c-2 0-4 1.6-4 4v4c5 1 9-2 12-5-3-2-6-3-8-3z" fill="#FFFFFF" fill-opacity="0.22"/>
+  </g>
+</svg>

@@ -100,6 +100,24 @@
   }
   .tries-pill strong { color: var(--amber-400); font-weight: 500; }
 
+  /* Banner de data do evento */
+  .event-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(12px, 3.4vw, 17px);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #ffffff;
+    background: linear-gradient(90deg, #7B2FF7 0%, #C133B0 45%, #F7711E 100%);
+    border-radius: 12px;
+    padding: 14px 28px;
+    margin-bottom: clamp(16px, 4vw, 26px);
+    box-shadow: 0 8px 24px rgba(193, 51, 176, 0.35);
+  }
+
   /* -------------------- Palco da roda -------------------- */
   .stage {
     position: relative;
@@ -292,6 +310,15 @@
   }
   .overlay.open .modal { transform: scale(1) translateY(0); }
 
+  .modal .prize-icon {
+    display: block;
+    width: clamp(72px, 18vw, 96px);
+    height: auto;
+    margin: 0 auto 14px;
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.18));
+  }
+  .modal .prize-icon[hidden] { display: none; }
+
   .modal .prize-badge {
     display: inline-block;
     font-family: var(--font-mono);
@@ -408,11 +435,14 @@
     <header>
       <p class="eyebrow">Promoção T.R.I. 2.0 · Gire e ganhe</p>
       <h1>Sua chance de levar <span class="accent">desconto de verdade</span></h1>
-      <p class="subtitle">Não é sorte cega. Essa é a sua oportunidade de receber o mapa para começar na pecuária do jeito certo e evitar erros que fazem muitos perderem dinheiro.</p>
+      <p class="subtitle">Gire a roleta para ver qual será o seu prêmio.</p>
     </header>
 
     <!-- Pill de tentativas restantes -->
     <div class="tries-pill">Tentativas restantes <strong id="triesLeft">0</strong></div>
+
+    <!-- Banner de data do evento -->
+    <div class="event-badge">18 e 19 de Julho · 9h às 17h</div>
 
     <!-- Palco da roda -->
     <div class="stage">
@@ -440,6 +470,7 @@
   <!-- Modal de resultado -->
   <div class="overlay" id="overlay">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <img class="prize-icon" id="prizeIcon" src="" alt="" hidden />
       <span class="prize-badge" id="prizeBadge">Você ganhou</span>
       <h2 id="modalTitle"></h2>
       <p class="message" id="modalMessage"></p>
@@ -485,14 +516,14 @@ const Component = {
      8 fatias, em ordem horária a partir do topo (sob o ponteiro).
   ------------------------------------------------------------------------- */
   PRIZES: [
-    { label: '10% OFF',   code: 'TRI10',    weight: 30, color: '#064C34', textColor: '#FAF8F3', message: 'Um bom começo. Todo desconto conta na safra.' },
-    { label: '15% OFF',   code: 'TRI15',    weight: 22, color: '#0E9F6E', textColor: '#021A0E', message: 'Mais economia no seu próximo plano.' },
-    { label: 'Não foi',   code: '',         weight: 25, color: '#03261A', textColor: '#9FB8AC', message: 'Não foi dessa vez. Respira e tenta de novo!' },
-    { label: '20% OFF',   code: 'TRI20',    weight: 12, color: '#0E9F6E', textColor: '#021A0E', message: 'Desconto cheio de respeito. Aproveite.' },
-    { label: '30% OFF',   code: 'TRI30',    weight: 5,  color: '#064C34', textColor: '#FAF8F3', message: 'Desconto cheio. Não deixe dinheiro na mesa.' },
-    { label: 'Brinde',    code: 'BRINDETRI',weight: 4,  color: '#03261A', textColor: '#3DDBA0', message: 'Você ganhou um brinde especial da T.R.I. 2.0.' },
-    { label: '50% OFF',   code: 'TRI50',    weight: 1,  color: '#D4A017', textColor: '#021A0E', message: 'Prêmio raro! Metade do preço é coisa séria.' },
-    { label: 'Promo dia', code: 'PROMODIA', weight: 1,  color: '#E8B931', textColor: '#021A0E', message: 'A promo do dia é sua. Aproveite agora.' },
+    { label: '10% DESCONTO',   code: 'TRI10',    weight: 30, color: '#064C34', textColor: '#FAF8F3', icon: 'icons/ticket.svg', message: 'Um bom começo. Todo desconto conta na safra.' },
+    { label: '15% DESCONTO',   code: 'TRI15',    weight: 22, color: '#0E9F6E', textColor: '#021A0E', icon: 'icons/ticket.svg', message: 'Mais economia no seu próximo plano.' },
+    { label: 'Não foi',   code: '',         weight: 25, color: '#03261A', textColor: '#9FB8AC', icon: 'icons/sad.svg', message: 'Não foi dessa vez. Respira e tenta de novo!' },
+    { label: '20% DESCONTO',   code: 'TRI20',    weight: 12, color: '#0E9F6E', textColor: '#021A0E', icon: 'icons/ticket.svg', message: 'Desconto cheio de respeito. Aproveite.' },
+    { label: '30% DESCONTO',   code: 'TRI30',    weight: 5,  color: '#064C34', textColor: '#FAF8F3', icon: 'icons/ticket.svg', message: 'Desconto cheio. Não deixe dinheiro na mesa.' },
+    { label: 'DZG grátis', code: 'DZGGRATIS',weight: 4,  color: '#03261A', textColor: '#3DDBA0', icon: 'icons/gift.svg', message: 'Você ganhou um DZG gratuito! Aproveite.' },
+    { label: '50% DESCONTO',   code: 'TRI50',    weight: 1,  color: '#D4A017', textColor: '#021A0E', icon: 'icons/trophy.svg', message: 'Prêmio raro! Metade do preço é coisa séria.' },
+    { label: 'Guia Suple.', code: 'GUIASUPLE', weight: 1,  color: '#E8B931', textColor: '#021A0E', icon: 'icons/book.svg', message: 'Você ganhou o Guia de Suplementação. Aproveite!' },
   ],
 
   CENTER_LABEL: 'T.R.I. 2.0',    // texto/logo no hub central (\n quebra linha)
@@ -538,6 +569,7 @@ const Component = {
     this.codeValue  = document.getElementById('codeValue');
     this.copyHint   = document.getElementById('copyHint');
     this.closeBtn   = document.getElementById('closeBtn');
+    this.prizeIcon  = document.getElementById('prizeIcon');
 
     this.slices = this.PRIZES.length;
     this.sliceAngle = 360 / this.slices;
@@ -669,6 +701,15 @@ const Component = {
     this.modalTitle.textContent = prize.label;
     this.modalMessage.textContent = prize.message;
     this.codeValue.textContent = prize.code;
+
+    // Ícone do prêmio
+    if (prize.icon) {
+      this.prizeIcon.src = prize.icon;
+      this.prizeIcon.alt = prize.label;
+      this.prizeIcon.hidden = false;
+    } else {
+      this.prizeIcon.hidden = true;
+    }
 
     // Reseta estado do modal
     this.codeBlock.classList.remove('show');

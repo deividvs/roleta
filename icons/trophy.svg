@@ -1,0 +1,27 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tr" x1="30" y1="22" x2="66" y2="66" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD46B"/>
+      <stop offset="0.5" stop-color="#F7A93E"/>
+      <stop offset="1" stop-color="#EF6F2E"/>
+    </linearGradient>
+    <filter id="glowt" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#B6379B" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <g filter="url(#glowt)">
+    <!-- taça -->
+    <path d="M34 24h28v10c0 9-6 15-14 15s-14-6-14-15V24z" fill="url(#tr)" stroke="#FFE3B0" stroke-width="2" stroke-opacity="0.6"/>
+    <!-- alças -->
+    <path d="M34 28h-7a7 7 0 0 0 7 9z" fill="none" stroke="#F7A93E" stroke-width="3.5"/>
+    <path d="M62 28h7a7 7 0 0 1-7 9z" fill="none" stroke="#F7A93E" stroke-width="3.5"/>
+    <!-- haste e base -->
+    <rect x="45" y="49" width="6" height="9" fill="#EF6F2E"/>
+    <rect x="38" y="58" width="20" height="5" rx="2" fill="url(#tr)"/>
+    <rect x="35" y="63" width="26" height="6" rx="3" fill="url(#tr)" stroke="#FFE3B0" stroke-width="1.5" stroke-opacity="0.5"/>
+    <!-- estrela -->
+    <path d="M48 30l2.4 4.8 5.3.8-3.8 3.7.9 5.3-4.8-2.5-4.8 2.5.9-5.3-3.8-3.7 5.3-.8z" fill="#FFF4E0"/>
+    <!-- brilho -->
+    <path d="M38 26c-2 1-3 3-3 6 4 1 7-1 9-4-2-1.4-4-2-6-2z" fill="#FFFFFF" fill-opacity="0.25"/>
+  </g>
+</svg>

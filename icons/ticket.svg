@@ -1,0 +1,26 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tk" x1="20" y1="20" x2="78" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC56B"/>
+      <stop offset="0.5" stop-color="#F7913E"/>
+      <stop offset="1" stop-color="#EF5F2E"/>
+    </linearGradient>
+    <linearGradient id="tk2" x1="34" y1="24" x2="86" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFB860"/>
+      <stop offset="1" stop-color="#E8542A"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#B6379B" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <g filter="url(#glow)">
+    <!-- ticket de trás -->
+    <path d="M40 26h34a6 6 0 0 1 6 6v8a6 6 0 0 0 0 12v8a6 6 0 0 1-6 6H40a6 6 0 0 1-6-6v-8a6 6 0 0 0 0-12v-8a6 6 0 0 1 6-6z" fill="url(#tk2)" stroke="#FFD9A0" stroke-width="2" stroke-opacity="0.6"/>
+    <!-- ticket da frente -->
+    <path d="M22 32h30a6 6 0 0 1 6 6v6a6 6 0 0 0 0 12v6a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6v-6a6 6 0 0 0 0-12v-6a6 6 0 0 1 6-6z" fill="url(#tk)" stroke="#FFE3B0" stroke-width="2" stroke-opacity="0.7"/>
+    <!-- estrela -->
+    <path d="M37 44l2.2 4.4 4.8.7-3.5 3.4.8 4.8-4.3-2.3-4.3 2.3.8-4.8-3.5-3.4 4.8-.7z" fill="#FFF4E0"/>
+    <!-- brilho -->
+    <path d="M22 34c-2 0-4 1.6-4 4v3c6 2 10 0 14-3-3-2.8-7-4-10-4z" fill="#FFFFFF" fill-opacity="0.28"/>
+  </g>
+</svg>

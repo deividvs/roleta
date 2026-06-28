@@ -1,0 +1,30 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gf" x1="24" y1="30" x2="72" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC56B"/>
+      <stop offset="0.5" stop-color="#F7913E"/>
+      <stop offset="1" stop-color="#EF5F2E"/>
+    </linearGradient>
+    <linearGradient id="gflid" x1="24" y1="34" x2="72" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD580"/>
+      <stop offset="1" stop-color="#F58A3A"/>
+    </linearGradient>
+    <filter id="glowg" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#B6379B" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <g filter="url(#glowg)">
+    <!-- corpo -->
+    <rect x="26" y="46" width="44" height="30" rx="5" fill="url(#gf)" stroke="#FFE3B0" stroke-width="2" stroke-opacity="0.6"/>
+    <!-- tampa -->
+    <rect x="22" y="40" width="52" height="12" rx="4" fill="url(#gflid)" stroke="#FFE3B0" stroke-width="2" stroke-opacity="0.7"/>
+    <!-- fita vertical -->
+    <rect x="44" y="40" width="8" height="36" fill="#FFF1D8" fill-opacity="0.85"/>
+    <!-- laços -->
+    <path d="M48 40c-2-7-10-12-14-8-3 3 0 8 14 8z" fill="#FFD98C" stroke="#FFE9C6" stroke-width="1.5"/>
+    <path d="M48 40c2-7 10-12 14-8 3 3 0 8-14 8z" fill="#FFCE78" stroke="#FFE9C6" stroke-width="1.5"/>
+    <circle cx="48" cy="40" r="3.5" fill="#FFF4E0"/>
+    <!-- brilho -->
+    <path d="M30 48c-2 0-3 1-3 3v3c5 1 8-1 11-4-3-1.6-6-2-8-2z" fill="#FFFFFF" fill-opacity="0.25"/>
+  </g>
+</svg>
