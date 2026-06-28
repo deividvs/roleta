@@ -1,3 +1,28 @@
+# Roleta de Prêmios — T.R.I. 2.0
+
+App de "spin the wheel" (roleta de prêmios) em **HTML, CSS e JavaScript puro**, sem framework e sem build. Roda dividida em 6 fatias, sorteio por probabilidade configurável, limite de tentativas persistido no navegador e captura de e-mail antes de revelar o código de desconto.
+
+> Estilo visual: roleta "carnaval/cassino" — fundo escuro roxo→vinho, fatias em laranja/roxo/coral alternados, aro escuro com lâmpadas brilhantes piscando, ponteiro em gota, centro branco "GIRAR" e CTA com gradiente.
+
+---
+
+## Aparência atual da tela
+
+- **Eyebrow:** `Promoção T.R.I. 2.0 · Gire e ganhe`
+- **Título:** GIRE A ROLETA **AGORA** (gradiente laranja→coral→roxo)
+- **Subtítulo:** *"Sua chance de levar desconto de verdade. Gire a roleta para ver qual será o seu prêmio."*
+- **Contador:** pílula gradiente `Tentativas restantes` + número
+- **Centro da roda:** botão branco `GIRAR` com borda tracejada
+- **CTA:** `Girar a roleta` (pílula gradiente com glow)
+- **Ícones decorativos flutuantes:** 🎁 ⭐ 🎟️ 🏅 🎬
+
+---
+
+## Código-fonte completo (`index.html`)
+
+Crie um arquivo `index.html` no Claude Code e cole **exatamente** o código abaixo — é a conversão fiel do que projetamos (HTML, CSS e JavaScript puro, sem framework e sem build). Abre direto no navegador e gera um modelo **idêntico**. Toda a personalização fica no bloco `CONFIGURAÇÃO` no topo do `<script>`.
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -27,9 +52,6 @@
   <div style="position:absolute;top:clamp(220px,46vw,340px);right:1%;font-size:clamp(30px,7.5vw,50px);filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));--r:-10deg;animation:vd-float 5.5s ease-in-out infinite .3s;pointer-events:none;z-index:1">🎟️</div>
   <div style="position:absolute;top:46%;left:0.5%;font-size:clamp(30px,7.5vw,50px);filter:drop-shadow(0 8px 14px rgba(0,0,0,.5));--r:8deg;animation:vd-float 6.2s ease-in-out infinite .9s;pointer-events:none;z-index:1">🏅</div>
   <div style="position:absolute;bottom:clamp(48px,12vw,90px);right:6%;font-size:clamp(32px,8vw,52px);filter:drop-shadow(0 10px 16px rgba(0,0,0,.55));--r:-8deg;animation:vd-float 5.8s ease-in-out infinite .4s;pointer-events:none;z-index:1">🎬</div>
-
-  <!-- banner de data do evento (topo) -->
-  <div style="position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;max-width:100%;text-align:center;font-family:'DM Mono',monospace;font-weight:500;font-size:clamp(11px,3.2vw,16px);letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,#F4842A,#F0506E 55%,#9333EA);border-radius:12px;padding:11px clamp(18px,5vw,28px);margin-bottom:clamp(16px,4vw,26px);box-shadow:0 8px 22px rgba(240,80,110,.4)">18 e 19 de Julho · 9h às 17h</div>
 
   <!-- header -->
   <div style="position:relative;z-index:2;text-align:center;max-width:560px;margin-bottom:24px">
@@ -94,7 +116,7 @@
       <div id="codeStep" style="display:none">
         <div style="font-size:13px;color:#57534E;margin-bottom:8px">Use este código no checkout:</div>
         <div id="wonCode" style="font-family:'DM Mono',monospace;font-weight:500;font-size:24px;letter-spacing:.06em;color:#3B0A52;background:#F6ECFE;border:2px dashed #9333EA;border-radius:12px;padding:14px;margin-bottom:8px"></div>
-        <div id="redirectNote" style="font-size:12px;color:#78716C">Código enviado também para seu e-mail.</div>
+        <div style="font-size:12px;color:#78716C">Código enviado também para seu e-mail.</div>
       </div>
     </div>
   </div>
@@ -122,18 +144,8 @@ var REQUIRE_EMAIL = true;      // exigir e-mail antes de revelar o código?
 var FORCE_INDEX   = null;      // índice (0-based) p/ forçar resultado; null = por peso
 var STORAGE_KEY   = 'tri-roleta-spins';
 
-/* ── Integração de checkout (Hotmart) ──────────────────────────
-   Ao revelar o código, o cliente é redirecionado para o checkout
-   com o cupom ganho (offDiscount) e o e-mail (pré-preenchimento). */
-var CHECKOUT_URL   = 'https://pay.hotmart.com/L67749361O?off=teyqer3w&checkoutMode=10';
-var APPEND_COUPON  = true;          // anexa o cupom ganho na URL (ex.: &offDiscount=TRI20)
-var COUPON_PARAM   = 'offDiscount'; // nome do parâmetro do cupom (Hotmart usa offDiscount)
-var PREFILL_EMAIL  = true;          // envia o e-mail digitado para pré-preencher o checkout
-var EMAIL_PARAM    = 'email';       // nome do parâmetro de e-mail (Hotmart usa email)
-var REDIRECT_DELAY = 5000;          // ms que o código fica visível antes de redirecionar (0 = imediato)
-
 var SLICE = 360 / PRIZES.length;
-var rotation = 0, spinning = false, spinsLeft = readSpinsLeft(), timer = null, redirectTimer = null;
+var rotation = 0, spinning = false, spinsLeft = readSpinsLeft(), timer = null;
 
 /* ── persistência das tentativas no navegador ── */
 function readSpinsLeft(){
@@ -248,20 +260,9 @@ function showResult(prize){
   document.getElementById('emailInput').value = '';
   document.getElementById('emailError').textContent = '';
   document.getElementById('wonCode').textContent = prize.code || '';
-  document.getElementById('redirectNote').textContent = 'Código enviado também para seu e-mail.';
   document.getElementById('modal')._code = prize.code || '';
   document.getElementById('modal').style.display = 'flex';
 }
-
-/* Monta a URL final do checkout, anexando o cupom ganho e o e-mail digitado. */
-function buildCheckoutUrl(email, code){
-  var url = CHECKOUT_URL, params = [];
-  if(APPEND_COUPON && code)  params.push(COUPON_PARAM+'='+encodeURIComponent(code));
-  if(PREFILL_EMAIL && email) params.push(EMAIL_PARAM+'='+encodeURIComponent(email));
-  if(params.length) url += (url.indexOf('?') >= 0 ? '&' : '?') + params.join('&');
-  return url;
-}
-
 function revealCode(){
   var email = document.getElementById('emailInput').value.trim();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -269,26 +270,8 @@ function revealCode(){
   }
   // aqui você pode enviar o e-mail para sua lista (API/CRM) antes de revelar
   document.getElementById('emailStep').style.display = 'none';
-  var code = document.getElementById('modal')._code;
-  document.getElementById('wonCode').textContent = code;
+  document.getElementById('wonCode').textContent = document.getElementById('modal')._code;
   document.getElementById('codeStep').style.display = 'block';
-
-  if(!code) return; // prêmio sem cupom: não redireciona
-
-  var url = buildCheckoutUrl(email, code);
-  var note = document.getElementById('redirectNote');
-  if(REDIRECT_DELAY > 0){
-    var secs = Math.ceil(REDIRECT_DELAY/1000);
-    note.textContent = 'Anote seu código — redirecionando em '+secs+'s...';
-    clearInterval(redirectTimer);
-    redirectTimer = setInterval(function(){
-      secs--;
-      if(secs <= 0){ clearInterval(redirectTimer); redirectTimer = null; window.location.href = url; }
-      else note.textContent = 'Anote seu código — redirecionando em '+secs+'s...';
-    }, 1000);
-  } else {
-    window.location.href = url;
-  }
 }
 
 /* ── eventos ── */
@@ -296,7 +279,6 @@ document.getElementById('cta').addEventListener('click', spin);
 document.getElementById('hub').addEventListener('click', spin);
 document.getElementById('revealBtn').addEventListener('click', revealCode);
 document.getElementById('modalClose').addEventListener('click', function(){
-  if(redirectTimer){ clearInterval(redirectTimer); redirectTimer = null; }
   document.getElementById('modal').style.display = 'none';
 });
 
@@ -307,3 +289,95 @@ updateCounter();
 </script>
 </body>
 </html>
+```
+
+---
+
+## Como o texto fica na horizontal durante o giro
+
+Cada rótulo tem duas camadas:
+
+1. **Posicionador** (externo) — leva o rótulo até o centro da fatia:
+   `translate(-50%,-50%) rotate(ÂNGULO) translateY(-RAIO) rotate(-ÂNGULO)`
+2. **Contra-rotor** (interno, com os textos) — cancela o giro da roda:
+   `rotate(-ROTAÇÃO_ATUAL)` usando a **mesma** `transition` da roda.
+
+Como a roda gira `+R(t)` e o contra-rotor `-R(t)` com a mesma curva/duração, a orientação final do texto é sempre `0°` → permanece na horizontal em todos os quadros.
+
+---
+
+## Configuração (no topo da classe `Component`)
+
+| Campo | Valor atual | O que faz |
+|---|---|---|
+| `PRIZES[]` | 6 itens | Lista de prêmios. Cada item: `top`, `sub`, `label`, `code`, `weight`, `color`, `textColor`, `message`. |
+| `CENTER_LABEL` | `GIRAR` | Texto/logo no centro da roda. |
+| `MAX_SPINS` | `3` | Número de tentativas permitidas. |
+| `REQUIRE_EMAIL` | `true` | Exige e-mail antes de revelar o código. |
+| `FORCE_INDEX` | `null` | `null` = sorteio por peso. Um índice (0-based) força aquele prêmio. |
+| `STORAGE_KEY` | `tri-roleta-spins` | Chave do `localStorage` que guarda os giros usados. |
+
+### Tabela de prêmios atual
+
+| # | Valor (top) | Descrição (sub) | Código | Peso | Cor |
+|---|---|---|---|---|---|
+| 0 | 10% | DESCONTO | `SGF10` | 30 | laranja `#F4842A` |
+| 1 | 30% | DESCONTO | `TRI30` | 8 | **roxo `#7C3AED`** |
+| 2 | 15% | DESCONTO | `TRI15` | 22 | coral `#F0506E` |
+| 3 | 20% | DESCONTO | `TRI20` | 18 | laranja `#F4842A` |
+| 4 | DZG | POR R$ 1,00 | `DZG1` | 1 | **roxo `#7C3AED`** |
+| 5 | GUIA | DE SUPLEMENTAÇÃO | `GUIASUPLEM` | 5 | coral `#F0506E` |
+
+As fatias **roxas** são os prêmios em destaque (30% e DZG). `weight` é relativo — um prêmio com `weight: 30` é 30× mais provável que um com `weight: 1`; a soma não precisa dar 100.
+
+### Exemplo de prêmio
+
+```js
+{ top: '30%', sub: 'DESCONTO', label: '30% DESCONTO', code: 'TRI30',
+  weight: 8, color: '#7C3AED', textColor: '#fff',
+  message: 'Desconto cheio. Não deixe dinheiro na mesa.' }
+```
+
+---
+
+## Paleta
+
+| Cor | Hex | Uso |
+|---|---|---|
+| Laranja | `#F4842A` | Fatias |
+| Roxo (destaque) | `#7C3AED` | Fatias de destaque (30%, DZG) |
+| Coral | `#F0506E` | Fatias |
+| Fundo | `#3C1531 → #271036 → #150A22` | Gradiente da página |
+| Aro | `#2A1640 → #140A22` | Aro escuro da roda |
+| Lâmpadas | `#FFE7A0 / #F0A93C` | Luzes do aro |
+
+**Fontes:** Bricolage Grotesque (display/fatias), Source Sans 3 (corpo), DM Mono (números).
+
+---
+
+## Como rodar
+
+Arquivo estático único. Abra no navegador:
+
+```bash
+python3 -m http.server 8000   # depois acesse http://localhost:8000
+```
+
+### Reiniciar as tentativas (teste)
+
+No console do navegador:
+
+```js
+localStorage.removeItem('tri-roleta-spins');
+```
+
+---
+
+## Estrutura
+
+```
+index.html      # app completo: markup + estilos inline + lógica JS
+README.md       # este arquivo
+```
+
+> Neste projeto o app vive em `Roleta de Prêmios.dc.html` (formato Design Component). Ao recriar no Claude Code como HTML puro, peça um `index.html` único — toda a lógica da classe `Component` vira um `<script>` com as mesmas constantes de configuração.
