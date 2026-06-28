@@ -100,22 +100,24 @@
   }
   .tries-pill strong { color: var(--amber-400); font-weight: 500; }
 
-  /* Banner de data do evento */
+  /* Banner de data do evento (topo) */
   .event-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    max-width: 100%;
+    text-align: center;
     font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: clamp(12px, 3.4vw, 17px);
-    letter-spacing: 0.16em;
+    font-weight: 500;
+    font-size: clamp(11px, 3.2vw, 16px);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #ffffff;
-    background: linear-gradient(90deg, #7B2FF7 0%, #C133B0 45%, #F7711E 100%);
+    color: var(--forest-950);
+    background: linear-gradient(90deg, var(--amber-500) 0%, var(--amber-400) 100%);
     border-radius: 12px;
-    padding: 14px 28px;
-    margin-bottom: clamp(16px, 4vw, 26px);
-    box-shadow: 0 8px 24px rgba(193, 51, 176, 0.35);
+    padding: 13px clamp(20px, 6vw, 30px);
+    margin-bottom: clamp(18px, 4.5vw, 30px);
+    box-shadow: 0 8px 24px rgba(232, 185, 49, 0.28);
   }
 
   /* -------------------- Palco da roda -------------------- */
@@ -432,6 +434,9 @@
 <body>
 
   <div class="app">
+    <!-- Banner de data do evento (topo do site) -->
+    <div class="event-badge">18 e 19 de Julho · 9h às 17h</div>
+
     <header>
       <p class="eyebrow">Promoção T.R.I. 2.0 · Gire e ganhe</p>
       <h1>Sua chance de levar <span class="accent">desconto de verdade</span></h1>
@@ -440,9 +445,6 @@
 
     <!-- Pill de tentativas restantes -->
     <div class="tries-pill">Tentativas restantes <strong id="triesLeft">0</strong></div>
-
-    <!-- Banner de data do evento -->
-    <div class="event-badge">18 e 19 de Julho · 9h às 17h</div>
 
     <!-- Palco da roda -->
     <div class="stage">
